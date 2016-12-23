@@ -37,4 +37,53 @@ router.get('/', (req, res) => {
     ;
 });
 
+router.delete('/', (req, res) => {
+    SongService.delete()
+        .then(() => {
+            res.status(204).send();
+        })
+        .catch(function(err) {
+            res.status(500).send(err);
+        })
+    ;
+});
+
+router.get('/:id', (req, res) => {
+    SongService.findOneByQuery({id: req.params.id})
+        .then(song => {
+            if (!song) {
+                res.status(404).send({err: 'No song found with id' + req.params.id});
+                return;
+            }
+            res.status(200).send(song);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).send(err);
+        })
+    ;
+});
+
+router.put('/:id', (req, res) => {
+    SongService.updateById(req.params.id, req.body)
+        .then(result => {
+            res.status(201).send(result);
+        })
+        .catch(err => {;
+            res.status(500).send(err);
+        })
+    ;
+});
+
+router.delete('/:id', (req, res) => {
+    SongService.delete({id: req.params.id})
+        .then(() => {
+            res.status(204).send();
+        })
+        .catch(err => {
+            res.status(500).send(err);
+        })
+    ;
+});
+
 module.exports = router;

@@ -7,7 +7,7 @@ exports.find = (query = {}) => {
     });
 };
 
-exports.create = (song) => {
+exports.create = song => {
     const model = db.Songs.build(song);
     return model.validate()
         .then(err => {
@@ -17,4 +17,18 @@ exports.create = (song) => {
             return model.save();
         })
     ;
+};
+
+exports.findOneByQuery = query => {
+    return db.Songs.findOne({ where: query });
+};
+
+exports.delete = (query = {}) => {
+    return db.Songs.destroy({
+        where: query
+    });
+};
+
+exports.updateById = (id, dataToUpdate) => {
+    return db.Songs.update(dataToUpdate, { where: { id }, returning: true });
 };

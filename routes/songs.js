@@ -86,4 +86,16 @@ router.delete('/:id', (req, res) => {
     ;
 });
 
+router.get('/artist/:artist', (req, res) => {
+    SongService.find({ artist: { $like: `%${req.params.artist}%` } })
+        .then(songs => {
+            res.status(200).send(songs);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).send(err);
+        })
+    ;
+});
+
 module.exports = router;

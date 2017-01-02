@@ -1,0 +1,15 @@
+<% include partials/header %>
+   <%if (err) {%>
+        <div style="color:red"><%=err.message%></div>
+        <hr/>
+   <%} %>
+       <form class="form-horizontal" method="POST" action="/songs">
+            <% include _formSong %>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Save</button>
+                </div>
+            </div>
+       </form>
+
+<% include partials/footer %>

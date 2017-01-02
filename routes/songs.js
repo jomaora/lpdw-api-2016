@@ -4,30 +4,49 @@ const router = express.Router();
 const SongService = require('../services/songService');
 const APIError = require('../lib/apiError');
 
-const songBodyVerification = (body) => {
-    const attributes = _.keys(body);
+const songBodyVerification = (req, res, next) => {
     const mandatoryAttributes = ['title', 'album', 'artist'];
-    const missingAttributes = _.difference(mandatoryAttributes, attributes);
-    if (!missingAttributes.length) {
-        return;
+    let error = null;
+
+    const attributes = _.keys(req.body);
+    if (_.some(mandatoryAttributes, key => _.isEmpty(req.body[key]))) {
+        error = new APIError(400, `${mandatoryAttributes.toString()} fields are mandatory`);
     }
-    return missingAttributes.toString();
+    if (!req.accepts('text/html') && error) {
+        return next(new APIError(400, error));
+    }
+    if (error) {
+        req.session.err = error;
+        req.session.song = req.body;
+        return res.redirect('/songs/add');
+    }
+    next();
 };
 
-router.post('/', (req, res) => {
-    const missingAttributes = songBodyVerification(req.body);
-    if (!missingAttributes) {
-        return SongService.create(req.body)
-            .then(song => {
-                res.status(201).send(song);
-            })
-            .catch(err => {
-                res.status(500).send(err);
-            })
-        ;
+const songTransformation = (req, res, next) => {
+    if (req.body.year && !_.isFinite(parseInt(req.body.year, 10))) {
+        error = new APIError(400, 'Year should be a number');
     }
+    if (req.body.bpm && !_.isFinite(parseInt(req.body.bpm, 10))) {
+        error = new APIError(400, 'BPM should be a number');
+    }
+    req.body.year = (_.isEmpty(req.body.year)) ? undefined : req.body.year;
+    req.body.bpm = (_.isEmpty(req.body.bpm)) ? undefined : req.body.bpm;
+    next();
+}
 
-    res.status(400).send({err: missingAttributes});
+router.post('/', songBodyVerification, songTransformation, (req, res, next) => {
+    return SongService.create(req.body)
+        .then(song => {
+            if (req.accepts('text/html')) {
+                return res.redirect('/songs/' + song.id);
+            }
+            if (req.accepts('application/json')) {
+                return res.status(201).send(song);
+            }
+        })
+        .catch(err => next)
+    ;
 });
 
 router.get('/', (req, res) => {
@@ -47,6 +66,17 @@ router.delete('/', (req, res) => {
             res.status(500).send(err);
         })
     ;
+});
+
+router.get('/add', (req, res, next) => {
+    const song = (req.session.song) ? req.session.song : {};
+    const err = (req.session.err) ? req.session.err : null;
+    if (!req.accepts('text/html')) {
+        return next(new APIError(406, 'Not valid type for asked resource'));
+    }
+    req.session.song = null;
+    req.session.err = null;
+    res.render('newSong', {song, err});
 });
 
 router.get('/:id', (req, res, next) => {

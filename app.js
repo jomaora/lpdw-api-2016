@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 
+var APIError = require('./lib/apiError');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var songs = require('./routes/songs');
@@ -31,6 +32,13 @@ var sess = {
     saveUninitialized: true
 };
 app.use(session(sess));
+
+app.use((req, res, next) => {
+    if (!req.accepts('text/html') && !req.accepts('application/json')) {
+        return next(new APIError(406, 'Not valid type for asked resource'));
+    }
+    next();
+});
 
 app.use('/', index);
 app.use('/users', users);

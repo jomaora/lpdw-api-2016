@@ -49,12 +49,17 @@ router.post('/', songBodyVerification, songTransformation, (req, res, next) => {
     ;
 });
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
     SongService.find(req.query)
         .then(songs => {
-            res.status(200).send(songs);
+            if (req.accepts('text/html')) {
+              return res.render('songs', {songs: songs});
+            }
+            if (req.accepts('application/json')) {
+              return res.status(200).send(songs);
+            }
         })
-    ;
+        .catch(err => next);
 });
 
 router.delete('/', (req, res) => {

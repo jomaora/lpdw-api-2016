@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var methodOverride = require('method-override');
 
 var APIError = require('./lib/apiError');
 var index = require('./routes/index');
@@ -32,6 +33,7 @@ var sess = {
     saveUninitialized: true
 };
 app.use(session(sess));
+app.use(methodOverride('_method'));
 
 app.use((req, res, next) => {
     if (!req.accepts('text/html') && !req.accepts('application/json')) {

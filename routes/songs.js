@@ -45,7 +45,7 @@ router.post('/', songBodyVerification, songTransformation, (req, res, next) => {
                 return res.status(201).send(song);
             }
         })
-        .catch(err => next)
+        .catch(next)
     ;
 });
 
@@ -59,7 +59,7 @@ router.get('/', (req, res, next) => {
               return res.status(200).send(songs);
             }
         })
-        .catch(err => next);
+        .catch(next);
 });
 
 router.delete('/', (req, res) => {
@@ -84,6 +84,22 @@ router.get('/add', (req, res, next) => {
     res.render('newSong', {song, err});
 });
 
+router.get('/edit/:id', (req, res, next) => {
+    const song = (req.session.song) ? req.session.song : {};
+    const err = (req.session.err) ? req.session.err : null;
+    if (!req.accepts('text/html')) {
+        return next(new APIError(406, 'Not valid type for asked resource'));
+    }
+    SongService.findOneByQuery({id: req.params.id})
+        .then(song => {
+            if (!song) {
+                return next(new APIError(404, 'No song found with id' + req.params.id));
+            }
+            return res.render('editSong', {song, err});
+        })
+        .catch(next);
+});
+
 router.get('/:id', (req, res, next) => {
     if (!req.accepts('text/html') && !req.accepts('application/json')) {
         return next(new APIError(406, 'Not valid type for asked resource'));
@@ -100,19 +116,21 @@ router.get('/:id', (req, res, next) => {
                 return res.status(200).send(song);
             }
         })
-        .catch(err => next)
+        .catch(next)
     ;
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', songTransformation, (req, res, next) => {
     SongService.updateById(req.params.id, req.body)
         .then(result => {
-            res.status(201).send(result);
+            if (req.accepts('text/html')) {
+                return res.redirect('/songs/' + req.params.id);
+            }
+            if (req.accepts('application/json')) {
+                return res.status(201).send(result);
+            }
         })
-        .catch(err => {;
-            res.status(500).send(err);
-        })
-    ;
+        .catch(next);
 });
 
 router.delete('/:id', (req, res) => {

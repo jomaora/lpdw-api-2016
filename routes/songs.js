@@ -2,6 +2,7 @@ const express = require('express');
 const _ = require('lodash');
 const router = express.Router();
 const SongService = require('../services/songService');
+const APIError = require('../lib/apiError');
 
 const songBodyVerification = (body) => {
     const attributes = _.keys(body);
@@ -48,19 +49,23 @@ router.delete('/', (req, res) => {
     ;
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
+    if (!req.accepts('text/html') && !req.accepts('application/json')) {
+        return next(new APIError(406, 'Not valid type for asked resource'));
+    }
     SongService.findOneByQuery({id: req.params.id})
         .then(song => {
             if (!song) {
-                res.status(404).send({err: 'No song found with id' + req.params.id});
-                return;
+                return next(new APIError(404, `id ${req.params.id} not found`));
             }
-            res.status(200).send(song);
+            if (req.accepts('text/html')) {
+                return res.render('song', {song: song});
+            }
+            if (req.accepts('application/json')) {
+                return res.status(200).send(song);
+            }
         })
-        .catch(err => {
-            console.log(err);
-            res.status(500).send(err);
-        })
+        .catch(err => next)
     ;
 });
 

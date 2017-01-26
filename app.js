@@ -11,6 +11,7 @@ var APIError = require('./lib/apiError');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var songs = require('./routes/songs');
+var signup = require('./routes/signup');
 
 var app = express();
 
@@ -42,9 +43,23 @@ app.use((req, res, next) => {
     next();
 });
 
+const verifyAuth = (req, res, next) => {
+     if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
+       next();
+   }
+
+   if (true) {
+   //if (req.isAuthenticated()) {
+       return next();
+   }
+   res.redirect('/login');
+};
+app.all('*',  verifyAuth);
+
 app.use('/', index);
 app.use('/users', users);
 app.use('/songs', songs);
+app.use('/signup', signup);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

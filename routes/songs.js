@@ -13,7 +13,7 @@ const songBodyVerification = (req, res, next) => {
         error = new APIError(400, `${mandatoryAttributes.toString()} fields are mandatory`);
     }
     if (!req.accepts('text/html') && error) {
-        return next(new APIError(400, error));
+        return next(error);
     }
     if (error) {
         req.session.err = error;
@@ -25,10 +25,10 @@ const songBodyVerification = (req, res, next) => {
 
 const songTransformation = (req, res, next) => {
     if (req.body.year && !_.isFinite(parseInt(req.body.year, 10))) {
-        error = new APIError(400, 'Year should be a number');
+        return next(new APIError(400, 'Year should be a number'));
     }
     if (req.body.bpm && !_.isFinite(parseInt(req.body.bpm, 10))) {
-        error = new APIError(400, 'BPM should be a number');
+        return next(new APIError(400, 'BPM should be a number'));
     }
     req.body.year = (_.isEmpty(req.body.year)) ? undefined : req.body.year;
     req.body.bpm = (_.isEmpty(req.body.bpm)) ? undefined : req.body.bpm;

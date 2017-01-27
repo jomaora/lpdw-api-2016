@@ -46,17 +46,17 @@ app.use((req, res, next) => {
 });
 
 const verifyAuth = (req, res, next) => {
-     if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
+    if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
        next();
-   }
+    }
 
-   if (true) {
-   //if (req.isAuthenticated()) {
+    if (true) {
+    //if (req.isAuthenticated()) {
        return next();
-   }
-   res.redirect('/login');
+    }
+    res.redirect('/login');
 };
-app.all('*',  verifyAuth);
+app.all(verifyAuth);
 
 app.use('/', index);
 app.use('/users', users);
@@ -73,6 +73,8 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
+  console.log('****', err.message, err.status);
+
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 

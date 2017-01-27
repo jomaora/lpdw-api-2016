@@ -27,10 +27,10 @@ const songTransformation = (req, res, next) => {
     let error = null;
 
     if (req.body.year && !_.isFinite(parseInt(req.body.year, 10))) {
-        error = new APIError(400, 'Year should be a number');
+        return next(new APIError(400, 'Year should be a number'));
     }
     if (req.body.bpm && !_.isFinite(parseInt(req.body.bpm, 10))) {
-        error = new APIError(400, 'BPM should be a number');
+        return next(new APIError(400, 'BPM should be a number'));
     }
     if (!req.accepts('text/html') && error) {
         return next(error);

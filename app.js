@@ -15,6 +15,9 @@ var songs = require('./routes/songs');
 var signup = require('./routes/signup');
 var login = require('./routes/login');
 
+var passport = require('passport');
+var authentication = require('./services/authentication');
+
 var app = express();
 
 app.use(cors());
@@ -46,18 +49,35 @@ app.use((req, res, next) => {
     next();
 });
 
-const verifyAuth = (req, res, next) => {
-    if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
-       next();
-    }
+passport.serializeUser(function(user, done) {
+   done(null, user);
+});
 
-    if (true) {
-    //if (req.isAuthenticated()) {
+passport.deserializeUser(function(obj, done) {
+   done(null, obj);
+});
+
+passport.use(authentication.songApiLocalStrategy());
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+const verifyAuth = (req, res, next) => {
+   if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
        return next();
-    }
-    res.redirect('/login');
+   }
+   if (req.isAuthenticated()) {
+       return next();
+   }
+   if (req.accepts('text/html')) {
+        return res.redirect('/login');
+   }
+   if (req.accepts('application/json')) {
+        res.set('Location', '/login');
+        return res.status(401).send({err: 'User should be logged'});
+   }
 };
-app.all(verifyAuth);
+app.all('*', verifyAuth);
 
 app.use('/', index);
 app.use('/users', users);
@@ -75,8 +95,6 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
-  console.log('****', err.message, err.status);
-
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 

@@ -13,7 +13,7 @@ const songBodyVerification = (req, res, next) => {
         error = new APIError(400, `${mandatoryAttributes.toString()} fields are mandatory`);
     }
     if (!req.accepts('text/html') && error) {
-        return next(new APIError(400, error));
+        return next(error);
     }
     if (error) {
         req.session.err = error;
@@ -24,11 +24,21 @@ const songBodyVerification = (req, res, next) => {
 };
 
 const songTransformation = (req, res, next) => {
+    let error = null;
+
     if (req.body.year && !_.isFinite(parseInt(req.body.year, 10))) {
         error = new APIError(400, 'Year should be a number');
     }
     if (req.body.bpm && !_.isFinite(parseInt(req.body.bpm, 10))) {
         error = new APIError(400, 'BPM should be a number');
+    }
+    if (!req.accepts('text/html') && error) {
+        return next(error);
+    }
+    if (error) {
+        req.session.err = error;
+        req.session.song = req.body;
+        return res.redirect('/songs/add');
     }
     req.body.year = (_.isEmpty(req.body.year)) ? undefined : req.body.year;
     req.body.bpm = (_.isEmpty(req.body.bpm)) ? undefined : req.body.bpm;
@@ -85,7 +95,6 @@ router.get('/add', (req, res, next) => {
 });
 
 router.get('/edit/:id', (req, res, next) => {
-    const song = (req.session.song) ? req.session.song : {};
     const err = (req.session.err) ? req.session.err : null;
     if (!req.accepts('text/html')) {
         return next(new APIError(406, 'Not valid type for asked resource'));
@@ -130,7 +139,13 @@ router.put('/:id', songTransformation, (req, res, next) => {
                 return res.status(201).send(result);
             }
         })
-        .catch(next);
+        .catch(err => {
+            req.session.err = err;
+            if (req.accepts('text/html')) {
+                return res.redirect('/songs/edit/' + req.params.id);
+            }
+            next(err);
+        });
 });
 
 router.delete('/:id', (req, res) => {

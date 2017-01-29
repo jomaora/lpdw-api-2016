@@ -14,6 +14,7 @@ var users = require('./routes/users');
 var songs = require('./routes/songs');
 var signup = require('./routes/signup');
 var login = require('./routes/login');
+var logout = require('./routes/logout');
 
 var passport = require('passport');
 var authentication = require('./services/authentication');
@@ -63,10 +64,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const verifyAuth = (req, res, next) => {
+   res.locals.userLogged = false;
    if (req.originalUrl === '/signup' || req.originalUrl === '/login') {
        return next();
    }
    if (req.isAuthenticated()) {
+       res.locals.userLogged = true;
        return next();
    }
    if (req.accepts('text/html')) {
@@ -84,6 +87,7 @@ app.use('/users', users);
 app.use('/songs', songs);
 app.use('/signup', signup);
 app.use('/login', login);
+app.use('/logout', logout);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

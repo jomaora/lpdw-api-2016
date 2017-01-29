@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var methodOverride = require('method-override');
+var cors = require('cors')
 
 var APIError = require('./lib/apiError');
 var index = require('./routes/index');
@@ -14,6 +15,7 @@ var songs = require('./routes/songs');
 
 var app = express();
 
+app.use(cors());
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

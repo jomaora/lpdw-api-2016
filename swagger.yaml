@@ -1,0 +1,330 @@
+swagger: '2.0'
+info:
+  title: LDPW 2016 Song API
+  version: "1.0.0"
+host: rest-api-lpdw2016.herokuapp.com
+schemes:
+  - https
+produces:
+  - application/json
+  - text/html
+paths:
+  /songs:
+    get:
+      summary: All stored songs
+      description: |
+        The Songs endpoint returns all the songs stored in the database.
+      tags:
+        - Songs
+      parameters:
+      - name: "authorization"
+        in: "header"
+        description: "Token for authorization"
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of songs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Songs'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a song
+      description: This endpoint adds a new song on the database
+      parameters:
+      - in: body
+        name: body
+        description: Song object that needs to be added to the store
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+            album:
+              type: string
+            artist:
+              type: string
+            year:
+              type: string
+            bpm:
+              type: string
+      - name: authorization
+        in: header
+        description: Token for authorization
+        required: false
+        type: string
+      responses:
+        200:
+          description: The created songs in HTML
+        201:
+          description: The created songs
+          schema:
+            $ref: '#/definitions/Songs'
+        400:
+          description: Error in body
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete all songs
+      parameters:
+      - name: authorization
+        in: header
+        description: Token for authorization
+        required: false
+        type: string
+      responses:
+        204:
+          description: Nothing
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+  /songs/{id}:
+    get:
+      summary: Return the song according to the given id
+      description: |
+        The Songs endpoint returns one song stored in the database based on the given id.
+      tags:
+        - Songs
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of song to return"
+        required: true
+        type: string
+      - name: authorization
+        in: header
+        description: Token for authorization
+        required: false
+        type: string
+      responses:
+        200:
+          description: An array of songs
+          schema:
+            $ref: '#/definitions/Songs'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not Found Song
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: update a song
+      description: |
+        The Songs endpoint updates the song for the given id, with the given data.
+      tags:
+        - Songs
+      parameters:
+      - name: id
+        in: path
+        description: ID of song to return
+        required: true
+        type: string
+      - name: authorization
+        in: header
+        description: Token for authorization
+        required: false
+        type: string
+      - in: body
+        name: body
+        description: Song object that needs to be added to the store
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+            album:
+              type: string
+            artist:
+              type: string
+            year:
+              type: string
+            bpm:
+              type: string
+      responses:
+        200:
+          description: The updated song
+          schema:
+            $ref: '#/definitions/Songs'
+        400:
+          description: Error in body
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Not Found Song for the given Id
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete the song according the given Id
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of song to return"
+        required: true
+        type: "string"
+      - name: authorization
+        in: header
+        description: Token for authorization
+        required: false
+        type: string
+      responses:
+        204:
+          description: Nothing
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+  /signup:
+    get:
+      summary: Return the form need to sign up in the application
+      responses:
+        200:
+          description: HTML FORM
+        406:
+          description: Accept Header should be text/html
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Creates an user in the application
+      parameters:
+      - in: body
+        name: body
+        description: Data needed to create an user
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            displayName:
+              type: string
+      responses:
+        200:
+          description: Created user
+          schema:
+            $ref: '#/definitions/User'
+        302:
+          description: Redirection to the confirmation page if the request is in text/html
+        400:
+          description: Data to create user is not complete
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: Accept Header should be application/json or text/html
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: User already exists
+          schema:
+            $ref: '#/definitions/Error'
+  /login:
+    get:
+      summary: Return the form need to login in the application
+      responses:
+        200:
+          description: HTML FORM
+        406:
+          description: Accept Header should be text/html
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Logs an user in the application
+      parameters:
+      - in: body
+        name: body
+        description: Data needed to create an user
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+      responses:
+        302:
+          description: Redirection to the home page if the request is in text/html
+definitions:
+  Songs:
+    type: object
+    properties:
+      id:
+        type: number
+        description: Id given by the database
+      title:
+        type: string
+      album:
+        type: string
+      artist:
+        type: string
+      year:
+        type: number
+      bpm:
+        type: number
+      createdAt:
+        type: string
+        format: date
+      updatedAt:
+        type: string
+        format: date
+  User:
+    type: object
+    properties:
+      id:
+        type: number
+        description: Id given by the database
+      username:
+        type: string
+      displayName:
+        type: string
+      createdAt:
+        type: string
+        format: date
+      updatedAt:
+        type: string
+        format: date
+  Error:
+    type: string
